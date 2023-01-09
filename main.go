@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type Manifest struct {
@@ -59,8 +60,14 @@ func mains() error {
 	return nil
 }
 
+var version string
+
 func main() {
 	flag.Parse()
+
+	fmt.Fprintf(os.Stderr, "%s %s for %s/%s by %s\n",
+		os.Args[0], version, runtime.GOOS, runtime.GOARCH, runtime.Version())
+
 	if err := mains(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
