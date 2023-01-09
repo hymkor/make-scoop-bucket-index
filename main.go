@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -14,10 +15,17 @@ type Manifest struct {
 	Homepage    string `json:"homepage"`
 }
 
-var flagBucketDir = flag.String("b","./bucket","Bucket directory path")
+var (
+	flagBucketDir   = flag.String("b", "./bucket", "Bucket directory path")
+	flagConcatinate = flag.Bool("c", false, "Concatinate the output with the contents from STDIN")
+)
 
 func mains() error {
 	var dirName = *flagBucketDir
+
+	if *flagConcatinate {
+		io.Copy(os.Stdout, os.Stdin)
+	}
 
 	files, err := os.ReadDir(dirName)
 	if err != nil {
