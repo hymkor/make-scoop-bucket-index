@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 )
 
@@ -19,6 +20,10 @@ type Manifest struct {
 var (
 	flagBucketDir   = flag.String("b", "./bucket", "Bucket directory path")
 	flagConcatinate = flag.Bool("c", false, "Concatinate the output with the contents from STDIN")
+
+	flagShowNotMatchingUser = flag.String("nmu", "", "Show not matchin user")
+
+	rxGitHubUrl = regexp.MustCompile(`^https://github.com/([\w-]+)/([\w-]+)`)
 )
 
 func mains() error {
@@ -51,8 +56,15 @@ func mains() error {
 			return err
 		}
 
+		title := name[0 : len(name)-5]
+		if m := rxGitHubUrl.FindStringSubmatch(manifest.Homepage); m != nil {
+			if *flagShowNotMatchingUser != "" && *flagShowNotMatchingUser != m[1] {
+				title = m[1] + " / " + m[2]
+			}
+		}
+
 		fmt.Printf("* [%s](%s) %s - %s\r\n",
-			name[0:len(name)-5],
+			title,
 			manifest.Homepage,
 			manifest.Version,
 			manifest.Description)
