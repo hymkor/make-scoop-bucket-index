@@ -1,5 +1,6 @@
 {
     "version": "0.0.1",
+    "description": "Make README.md of the bucket repository",
     "homepage": "https://github.com/hymkor/make-scoop-bucket-index",
     "architecture": {
         "32bit": {
