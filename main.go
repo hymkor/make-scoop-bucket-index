@@ -38,6 +38,7 @@ func mains() error {
 		return err
 	}
 
+	others := map[string][][4]string{}
 	for _, file := range files {
 		name := file.Name()
 		if filepath.Ext(name) != ".json" {
@@ -59,7 +60,10 @@ func mains() error {
 		title := name[0 : len(name)-5]
 		if m := rxGitHubUrl.FindStringSubmatch(manifest.Homepage); m != nil {
 			if *flagShowNotMatchingUser != "" && *flagShowNotMatchingUser != m[1] {
-				title = m[1] + " / " + m[2]
+				others[m[1]] = append(others[m[1]], [...]string{
+					title, manifest.Homepage, manifest.Version, manifest.Description,
+				})
+				continue
 			}
 		}
 
@@ -68,6 +72,12 @@ func mains() error {
 			manifest.Homepage,
 			manifest.Version,
 			manifest.Description)
+	}
+	for name, o := range others {
+		fmt.Printf("\r\n%s\r\n", name)
+		for _, repo := range o {
+			fmt.Printf("* [%s](%s) %s - %s\r\n", repo[0], repo[1], repo[2], repo[3])
+		}
 	}
 	return nil
 }
