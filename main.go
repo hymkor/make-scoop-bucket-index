@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+
+	"github.com/hymkor/go-sortedkeys"
 )
 
 type Manifest struct {
@@ -73,9 +75,9 @@ func mains() error {
 			manifest.Version,
 			manifest.Description)
 	}
-	for name, o := range others {
-		fmt.Printf("\r\n%s\r\n", name)
-		for _, repo := range o {
+	for p := sortedkeys.New(others); p.Range(); {
+		fmt.Printf("\r\n%s\r\n", p.Key)
+		for _, repo := range p.Value {
 			fmt.Printf("* [%s](%s) %s - %s\r\n", repo[0], repo[1], repo[2], repo[3])
 		}
 	}
