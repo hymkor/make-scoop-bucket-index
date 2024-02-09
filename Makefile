@@ -1,26 +1,34 @@
-NAME=$(lastword $(subst /, ,$(abspath .)))
-VERSION=$(shell git.exe describe --tags 2>nul || echo noversion)
-GOOPT=-ldflags "-s -w -X main.version=$(VERSION)"
-
 ifeq ($(OS),Windows_NT)
     SHELL=CMD.EXE
     SET=SET
+    NUL=nul
 else
     SET=export
+    NUL=/dev/null
 endif
 
+NAME:=$(notdir $(CURDIR))
+VERSION:=$(shell git describe --tags 2>$(NUL) || echo noversion)
+GOOPT:=-ldflags "-s -w -X main.version=$(VERSION)"
+EXE:=$(shell go env GOEXE)
+
 all:
-	go fmt
+	go fmt ./...
 	$(SET) "CGO_ENABLED=0" && go build $(GOOPT)
 
-_package:
+_dist:
 	go fmt
 	$(SET) "CGO_ENABLED=0" && go build $(GOOPT)
-	zip $(NAME)-$(VERSION)-$(GOOS)-$(GOARCH).zip $(NAME)$(EXT)
+	zip $(NAME)-$(VERSION)-$(GOOS)-$(GOARCH).zip $(NAME)$(EXE)
 
-package:
-	$(SET) "GOOS=windows" && $(SET) "GOARCH=386"   && $(MAKE) _package EXT=.exe
-	$(SET) "GOOS=windows" && $(SET) "GOARCH=amd64" && $(MAKE) _package EXT=.exe
+dist:
+	$(SET) "GOOS=windows" && $(SET) "GOARCH=386"   && $(MAKE) _dist
+	$(SET) "GOOS=windows" && $(SET) "GOARCH=amd64" && $(MAKE) _dist
 
 manifest:
 	make-scoop-manifest *-windows-*.zip > $(NAME).json
+
+release:
+	gh release create -d --notes "" -t $(VERSION) $(VERSION) $(wildcard $(NAME)-$(VERSION)-*.zip)
+
+.PHONY: dist manifest _dist all
