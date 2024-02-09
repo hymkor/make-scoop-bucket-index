@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strings"
 
 	"github.com/hymkor/go-sortedkeys"
 )
@@ -27,6 +28,20 @@ var (
 
 	rxGitHubUrl = regexp.MustCompile(`^https://github.com/([\w-]+)/([\w-]+)`)
 )
+
+var escapeStrings = strings.NewReplacer(
+	`&`, `&amp;`,
+	`<`, `&lt;`,
+	`>`, `&gt;`,
+	`*`, `\*`,
+	`_`, `\_`,
+	"\r", " ",
+	"\n", " ",
+)
+
+func escape(s string) string {
+	return escapeStrings.Replace(s)
+}
 
 func mains() error {
 	var dirName = *flagBucketDir
@@ -73,7 +88,7 @@ func mains() error {
 			title,
 			manifest.Homepage,
 			manifest.Version,
-			manifest.Description)
+			escape(manifest.Description))
 	}
 	for p := sortedkeys.New(others); p.Range(); {
 		fmt.Printf("\r\n%s\r\n", p.Key)
